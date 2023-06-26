@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:zest_front_house/constants/styles.dart';
 import 'package:intl/intl.dart';
+import 'package:zest_front_house/pages/modeselectorpage.dart';
 
 final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -18,17 +19,23 @@ class TimeClockPage extends StatefulWidget {
 
 class _TimeClockPageState extends State<TimeClockPage> {
   late Timer timer;
-  String _formattedTime = _getCurrentTime();
+  String _formattedTime = DateFormat('h:mm a').format(DateTime.now());
   final String _formattedDate = DateFormat('EEEE, MMMM d').format(DateTime.now());
   bool _isClockedIn = false;
-  List<DateTime> _clockedIn = [];
-  List<DateTime> _clockedOut = [];
+  bool _isOnBreak = false;
+  // final List<DateTime> _clockedInList = <DateTime>[];
+  // final List<DateTime> _clockedOutList = <DateTime>[];
+  // final List<DateTime> _startBreakList = <DateTime>[];
+  // final List<DateTime> _endBreakList = <DateTime>[];
+  DateTime _clockedIn = DateTime.now();
+  DateTime _clockedOut = DateTime.now();
+  DateTime _startBreak = DateTime.now();
+  DateTime _endBreak = DateTime.now();
+  final List<Widget> timeClockColumn = <Widget>[];
   Duration _dayTotal = Duration(hours: 0);
   Duration _weekTotal = Duration(hours: 0);
   Duration _breakToday = Duration(hours: 0);
   Duration _breakThisWeek = Duration(hours: 0);
-  Duration _workToday = Duration(hours: 0);
-  Duration _workThisWeek = Duration(hours: 0);
 
   @override
   void initState() {
@@ -36,7 +43,7 @@ class _TimeClockPageState extends State<TimeClockPage> {
     timer = Timer.periodic(const Duration(minutes: 1), (Timer t) {
       if (mounted) {
         setState(() {
-          _formattedTime = _getCurrentTime();
+          _formattedTime = DateFormat('h:mm a').format(DateTime.now());
         });
       }
     });
@@ -48,11 +55,38 @@ class _TimeClockPageState extends State<TimeClockPage> {
     super.dispose();
   }
 
+  bool get isClockedIn => _isClockedIn;
+
   void clockIn() {
     setState(() {
       _isClockedIn = true;
     });
-    _clockedIn.add(DateTime.now());
+    DateTime temp = DateTime.now();
+    _clockedIn = DateTime(
+      temp.year,
+      temp.month,
+      temp.day,
+      temp.hour,
+      temp.minute
+    );
+    timeClockColumn.add(
+      Row(
+        children: [
+          const SizedBox(width: 100),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text('Clocked in:', style: getRobotoFontStyle(18, false, const Color(0xff8bc24a))),
+          ),
+          const Spacer(flex: 1),
+          Align(
+            alignment: Alignment.centerRight,
+            child: Text(DateFormat('h:mm a').format(DateTime.now()), style: getRobotoFontStyle(18, false, textColor)),
+          ),
+          const SizedBox(width: 100)
+        ]
+      )
+    );
+    timeClockColumn.add(const Divider(thickness: 0.5, color: Colors.black));
     Navigator.push(
         context,
         MaterialPageRoute(
@@ -68,8 +102,34 @@ class _TimeClockPageState extends State<TimeClockPage> {
   void clockOut() {
     setState(() {
       _isClockedIn = false;
+      DateTime temp = DateTime.now();
+      _clockedOut = DateTime(
+          temp.year,
+          temp.month,
+          temp.day,
+          temp.hour,
+          temp.minute
+      );
+      _dayTotal += _calculateHoursWorked(_clockedIn, _clockedOut);
     });
-    _clockedOut.add(DateTime.now());
+    timeClockColumn.add(
+        Row(
+            children: [
+              const SizedBox(width: 100),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text('Clocked out:', style: getRobotoFontStyle(18, false, const Color(0xfffc0303))),
+              ),
+              const Spacer(flex: 1),
+              Align(
+                alignment: Alignment.centerRight,
+                child: Text(DateFormat('h:mm a').format(DateTime.now()), style: getRobotoFontStyle(18, false, textColor)),
+              ),
+              const SizedBox(width: 100)
+            ]
+        )
+    );
+    timeClockColumn.add(const Divider(thickness: 0.5, color: Colors.black));
     Navigator.push(
         context,
         MaterialPageRoute(
@@ -82,9 +142,95 @@ class _TimeClockPageState extends State<TimeClockPage> {
     );
   }
 
+  void startBreak() {
+    setState(() {
+      _isOnBreak = true;
+    });
+    DateTime temp = DateTime.now();
+    _startBreak = DateTime(
+        temp.year,
+        temp.month,
+        temp.day,
+        temp.hour,
+        temp.minute
+    );
+    timeClockColumn.add(
+        Row(
+            children: [
+              const SizedBox(width: 100),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text('Break started:', style: getRobotoFontStyle(18, false, const Color(0xffff9700))),
+              ),
+              const Spacer(flex: 1),
+              Align(
+                alignment: Alignment.centerRight,
+                child: Text(DateFormat('h:mm a').format(DateTime.now()), style: getRobotoFontStyle(18, false, textColor)),
+              ),
+              const SizedBox(width: 100)
+            ]
+        )
+    );
+    timeClockColumn.add(const Divider(thickness: 0.5, color: Colors.black));
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (BuildContext context) => BreakInOutScreen(
+                restaurant: widget
+                    .restaurantName,
+                isOnBreak: _isOnBreak
+            )
+        )
+    );
+  }
+
+  void endBreak() {
+    setState(() {
+      _isOnBreak = false;
+      DateTime temp = DateTime.now();
+      _endBreak = DateTime(
+          temp.year,
+          temp.month,
+          temp.day,
+          temp.hour,
+          temp.minute
+      );
+      _breakToday += _calculateHoursWorked(_startBreak, _endBreak);
+    });
+    timeClockColumn.add(
+        Row(
+            children: [
+              const SizedBox(width: 100),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text('Break ended:', style: getRobotoFontStyle(18, false, const Color(0xffff9700))),
+              ),
+              const Spacer(flex: 1),
+              Align(
+                alignment: Alignment.centerRight,
+                child: Text(DateFormat('h:mm a').format(DateTime.now()), style: getRobotoFontStyle(18, false, textColor)),
+              ),
+              const SizedBox(width: 100)
+            ]
+        )
+    );
+    timeClockColumn.add(const Divider(thickness: 0.5, color: Colors.black));
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (BuildContext context) => BreakInOutScreen(
+                restaurant: widget
+                    .restaurantName,
+                isOnBreak: _isOnBreak
+            )
+        )
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Time Clock',
       home: Scaffold(
         appBar: AppBar(
@@ -98,7 +244,57 @@ class _TimeClockPageState extends State<TimeClockPage> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-            )
+            ),
+          actions: [
+            TextButton.icon(
+              onPressed: () {
+                if (!_isClockedIn) {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+
+                      return AlertDialog(
+                        title: Row (
+                            children: [
+                              const Icon(Icons.notification_important, size: 25, color: Color(0xfffdc601)),
+                              const SizedBox(width: 5),
+                              Text('Did you forget to clock in?', style: getRobotoFontStyle(20, true, textColor))
+                            ]
+                        ),
+                        content: Text('Please clock in before proceeding.', style: TextStyle(color: textColor, fontSize: 18)),
+                        actions: [
+                          TextButton(
+                            onPressed: () {Navigator.of(context).pop();},
+                            child: const Text('Ok'),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                } else {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (
+                              BuildContext context) => const ModeSelectorPage()
+                      )
+                  );
+                }
+              },
+              icon: Row(
+                  children: [
+                    Text('Main Activities', style: getRobotoFontStyle(20, true, textColor)),
+                    const SizedBox(width: 4),
+                    Icon(
+                        Icons.restaurant_menu_outlined,
+                        color: textColor,
+                        size: 40
+                    )
+                  ]
+              ), label: const Text(''),
+            ),
+            const SizedBox(width: 4)
+          ]
         ),
         body: Center(
           child: SafeArea(
@@ -168,18 +364,26 @@ class _TimeClockPageState extends State<TimeClockPage> {
                                   ]
                               )
                           ),
-                          const SizedBox(height: 25),
+                          const SizedBox(height: 35),
                           ElevatedButton(
                               style: ButtonStyle(
-                                backgroundColor: MaterialStateProperty.all<Color>(Color(0xffff9700)),
+                                backgroundColor: MaterialStateProperty.all<Color>(const Color(0xffff9700)),
                               ),
-                              onPressed: () {},
-                              child: const Column(
+                              onPressed: () {
+                                if (!_isOnBreak) {
+                                  startBreak();
+                                } else {
+                                  endBreak();
+                                }
+                              },
+                              child: Column(
                                 children: [
-                                  SizedBox(height: 8),
-                                  Icon(Icons.coffee_outlined, color: Colors.white),
-                                  Text('  Start Break  ', style: TextStyle(color: Colors.white, fontSize: 20)),
-                                  SizedBox(height: 8)
+                                  const SizedBox(height: 8),
+                                  const Icon(Icons.coffee_outlined, color: Colors.white),
+                                  _isOnBreak
+                                  ? const Text('   End Break   ', style: TextStyle(color: Colors.white, fontSize: 20))
+                                  : const Text('  Start Break  ', style: TextStyle(color: Colors.white, fontSize: 20)),
+                                  const SizedBox(height: 8)
                                 ],
                               )
                           )
@@ -187,7 +391,6 @@ class _TimeClockPageState extends State<TimeClockPage> {
                       )
                     )
                 ),
-                //const VerticalDivider(thickness: 1, color: Colors.black),
                 Padding(
                     padding: const EdgeInsets.only(left: 10, right: 20, top: 20, bottom: 20),
                     child: SingleChildScrollView(
@@ -196,7 +399,6 @@ class _TimeClockPageState extends State<TimeClockPage> {
                         padding: const EdgeInsets.all(20),
                         alignment: Alignment.centerLeft,
                         width: MediaQuery.of(context).size.width - 400,
-                        height: 500,
                         decoration: BoxDecoration(
                           color: Colors.black12,
                           borderRadius: BorderRadius.circular(10),
@@ -225,9 +427,7 @@ class _TimeClockPageState extends State<TimeClockPage> {
                                       const SizedBox(height: 5),
                                       Text(_getFormattedDuration(_dayTotal), style: getRobotoFontStyle(23, false, textColor)),
                                       const SizedBox(height: 5),
-                                      Text('Break: ${_getFormattedDuration(_breakToday)}', style: getRobotoFontStyle(15, false, textColor)),
-                                      const SizedBox(height: 5),
-                                      Text('Work: ${_getFormattedDuration(_workToday)}', style: getRobotoFontStyle(15, false, textColor))
+                                      Text('Break: ${_getFormattedDuration(_breakToday)}', style: getRobotoFontStyle(15, false, textColor))
                                     ],
                                   ),
                                   const SizedBox(width: 120),
@@ -237,12 +437,16 @@ class _TimeClockPageState extends State<TimeClockPage> {
                                       const SizedBox(height: 5),
                                       Text(_getFormattedDuration(_weekTotal), style: getRobotoFontStyle(23, false, textColor)),
                                       const SizedBox(height: 5),
-                                      Text('Break: ${_getFormattedDuration(_breakThisWeek)}', style: getRobotoFontStyle(15, false, textColor)),
-                                      const SizedBox(height: 5),
-                                      Text('Work: ${_getFormattedDuration(_workThisWeek)}', style: getRobotoFontStyle(15, false, textColor))
+                                      Text('Break: ${_getFormattedDuration(_breakThisWeek)}', style: getRobotoFontStyle(15, false, textColor))
                                     ],
                                   ),
                               ],
+                            ),
+                            const SizedBox(height: 12),
+                            Column(
+                              children: timeClockColumn.map(
+                                  (Widget timeClock) => timeClock
+                              ).toList()
                             )
                           ]
                         )
@@ -258,29 +462,8 @@ class _TimeClockPageState extends State<TimeClockPage> {
   }
 }
 
-String _getCurrentTime() {
-  DateTime currentTime = DateTime.now();
-  int hour = 0;
-  String minute = '';
-  String amPm = currentTime.hour >= 12 ? 'PM' : 'AM';
-  if (currentTime.hour >= 12) {
-    hour = currentTime.hour - 12;
-  } else if (currentTime.hour == 0) {
-    hour = 12;
-  } else {
-    hour = currentTime.hour;
-  }
-  if (currentTime.minute < 10) {
-    minute = '0${currentTime.minute}';
-  } else {
-    minute = '${currentTime.minute}';
-  }
-  String formattedTime = '$hour:$minute $amPm';
-  return formattedTime;
-}
-
-String _calculateHoursWorked(DateTime clockedIn, DateTime clockedOut) {
-  return _getFormattedDuration(clockedOut.difference(clockedIn));
+Duration _calculateHoursWorked(DateTime clockedIn, DateTime clockedOut) {
+  return clockedOut.difference(clockedIn);
 }
 
 String _getFormattedDuration(Duration time) {
@@ -341,13 +524,79 @@ class _ClockInOutScreenState extends State<ClockInOutScreen> {
                     ? Text('You are clocked in!', style: getRobotoFontStyle(50, false, Colors.white))
                     : Text('You are clocked out!', style: getRobotoFontStyle(50, false, Colors.white)),
                 const SizedBox(height: 8),
-                Text('At ${widget.restaurant} at ${_getCurrentTime()}', style: getRobotoFontStyle(25, false, Colors.white)),
+                Text('At ${widget.restaurant} at ${DateFormat('h:mm a').format(DateTime.now())}', style: getRobotoFontStyle(25, false, Colors.white)),
                 const SizedBox(height: 35),
                 Text('This screen will close in 5 seconds!', style: getRobotoFontStyle(20, false, Colors.white))
               ],
             )
           )
         )
+      ),
+    );
+  }
+}
+
+class BreakInOutScreen extends StatefulWidget {
+  const BreakInOutScreen({super.key, required this.restaurant, required this.isOnBreak});
+  final String restaurant;
+  final bool isOnBreak;
+
+  @override
+  _BreakInOutScreenState createState() => _BreakInOutScreenState();
+}
+
+class _BreakInOutScreenState extends State<BreakInOutScreen> {
+  late Timer timer;
+
+  @override
+  void initState() {
+    timer = Timer(const Duration(seconds: 5), () {
+      Navigator.pop(context);
+    });
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    timer.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+
+    return Scaffold(
+      key: _scaffoldKey,
+      backgroundColor: const Color(0xffff9700),
+      body: GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onTap: () {
+            Navigator.pop(context);
+          },
+          child: Center(
+              child: Container(
+                  padding: const EdgeInsets.all(135),
+                  alignment: Alignment.center,
+                  child: Column(
+                    children: [
+                      SizedBox(
+                          height: 100,
+                          width: 100,
+                          child: ClipOval(
+                              child: Image.asset('assets/images/icons/wired-lineal-567-french-fries-chips.gif')
+                          )
+                      ),
+                      widget.isOnBreak
+                          ? Text('Break started!', style: getRobotoFontStyle(50, false, Colors.white))
+                          : Text('Break ended!', style: getRobotoFontStyle(50, false, Colors.white)),
+                      const SizedBox(height: 8),
+                      Text('At ${widget.restaurant} at ${DateFormat('h:mm a').format(DateTime.now())}', style: getRobotoFontStyle(25, false, Colors.white)),
+                      const SizedBox(height: 35),
+                      Text('This screen will close in 5 seconds!', style: getRobotoFontStyle(20, false, Colors.white))
+                    ],
+                  )
+              )
+          )
       ),
     );
   }

@@ -1,7 +1,3 @@
-// To parse this JSON data, do
-//
-//     final mongoDbModel = mongoDbModelFromJson(jsonString);
-
 import 'dart:convert';
 
 MongoDbModel mongoDbModelFromJson(String str) => MongoDbModel.fromJson(json.decode(str));
@@ -11,27 +7,35 @@ String mongoDbModelToJson(MongoDbModel data) => json.encode(data.toJson());
 class MongoDbModel {
 
   MongoDbModel({
-    required this.id,
     required this.firstName,
     required this.lastName,
-    required this.phoneNumber,
+    required this.role,
+    required this.admin,
+    required this.passcode,
+    required this.icon
   });
 
   factory MongoDbModel.fromJson(Map<String, dynamic> json) => MongoDbModel(
-    id: json['__id'],
     firstName: json['firstName'],
     lastName: json['lastName'],
-    phoneNumber: json['phoneNumber'],
+    role: json['role'],
+    admin: json['admin'],
+    passcode: json['passcode'],
+    icon: json['icon']
   );
-  int id;
   String firstName;
   String lastName;
-  String phoneNumber;
+  String role;
+  bool admin;
+  String passcode;
+  int icon;
 
   Map<String, dynamic> toJson() => {
-    '__id': id,
     'firstName': firstName,
     'lastName': lastName,
-    'phoneNumber': phoneNumber,
+    'role': role,
+    'admin': admin,
+    'passcode': passcode,
+    'icon': icon
   };
 }

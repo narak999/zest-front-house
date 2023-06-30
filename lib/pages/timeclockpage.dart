@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:zest_front_house/constants/styles.dart';
 import 'package:intl/intl.dart';
-import 'package:zest_front_house/pages/modeselectorpage.dart';
+import 'package:zest_front_house/pages/mainactivities.dart';
 
 final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -14,7 +14,7 @@ class TimeClockPage extends StatefulWidget {
   final String restaurantName;
   
   @override
-  _TimeClockPageState createState() => _TimeClockPageState();
+  State<TimeClockPage> createState() => _TimeClockPageState();
 }
 
 class _TimeClockPageState extends State<TimeClockPage> {
@@ -54,8 +54,6 @@ class _TimeClockPageState extends State<TimeClockPage> {
     timer.cancel();
     super.dispose();
   }
-
-  bool get isClockedIn => _isClockedIn;
 
   void clockIn() {
     setState(() {
@@ -248,45 +246,20 @@ class _TimeClockPageState extends State<TimeClockPage> {
           actions: [
             TextButton.icon(
               onPressed: () {
-                if (!_isClockedIn) {
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-
-                      return AlertDialog(
-                        title: Row (
-                            children: [
-                              const Icon(Icons.notification_important, size: 25, color: Color(0xfffdc601)),
-                              const SizedBox(width: 5),
-                              Text('Did you forget to clock in?', style: getRobotoFontStyle(20, true, textColor))
-                            ]
-                        ),
-                        content: Text('Please clock in before proceeding.', style: TextStyle(color: textColor, fontSize: 18)),
-                        actions: [
-                          TextButton(
-                            onPressed: () {Navigator.of(context).pop();},
-                            child: const Text('Ok'),
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                } else {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (
-                              BuildContext context) => const ModeSelectorPage()
-                      )
-                  );
-                }
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (
+                            BuildContext context) => const ModeSelectorPage()
+                    )
+                );
               },
               icon: Row(
                   children: [
-                    Text('Main Activities', style: getRobotoFontStyle(20, true, textColor)),
+                    Text('Done', style: getRobotoFontStyle(20, true, textColor)),
                     const SizedBox(width: 4),
                     Icon(
-                        Icons.restaurant_menu_outlined,
+                        Icons.done,
                         color: textColor,
                         size: 40
                     )
@@ -346,25 +319,19 @@ class _TimeClockPageState extends State<TimeClockPage> {
                                   clockOut();
                                 }
                               },
-                              child: _isClockedIn
-                              ? const Column(
+                              child: Column(
                                   children: [
-                                    SizedBox(height: 8),
-                                    Icon(Icons.hourglass_bottom_outlined, color: Colors.white),
-                                    Text('    Clock Out    ', style: TextStyle(color: Colors.white, fontSize: 20)),
-                                    SizedBox(height: 8)
+                                    const SizedBox(height: 8),
+                                    const Icon(Icons.hourglass_bottom_outlined, color: Colors.white),
+                                    const SizedBox(height: 3),
+                                    _isOnBreak
+                                    ? const Text('    Clock Out    ', style: TextStyle(color: Colors.white, fontSize: 20))
+                                    : const Text('    Clock In     ', style: TextStyle(color: Colors.white, fontSize: 20)),
+                                    const SizedBox(height: 8)
                                   ]
                                 )
-                              : const Column(
-                                  children: [
-                                    SizedBox(height: 8),
-                                    Icon(Icons.hourglass_bottom_outlined, color: Colors.white),
-                                    Text('    Clock In     ', style: TextStyle(color: Colors.white, fontSize: 20)),
-                                    SizedBox(height: 8)
-                                  ]
-                              )
                           ),
-                          const SizedBox(height: 35),
+                          const SizedBox(height: 25),
                           ElevatedButton(
                               style: ButtonStyle(
                                 backgroundColor: MaterialStateProperty.all<Color>(const Color(0xffff9700)),
@@ -380,6 +347,7 @@ class _TimeClockPageState extends State<TimeClockPage> {
                                 children: [
                                   const SizedBox(height: 8),
                                   const Icon(Icons.coffee_outlined, color: Colors.white),
+                                  const SizedBox(height: 3),
                                   _isOnBreak
                                   ? const Text('   End Break   ', style: TextStyle(color: Colors.white, fontSize: 20))
                                   : const Text('  Start Break  ', style: TextStyle(color: Colors.white, fontSize: 20)),
@@ -476,7 +444,7 @@ class ClockInOutScreen extends StatefulWidget {
   final bool isClockedIn;
 
   @override
-  _ClockInOutScreenState createState() => _ClockInOutScreenState();
+  State<ClockInOutScreen> createState() => _ClockInOutScreenState();
 }
 
 class _ClockInOutScreenState extends State<ClockInOutScreen> {
@@ -542,7 +510,7 @@ class BreakInOutScreen extends StatefulWidget {
   final bool isOnBreak;
 
   @override
-  _BreakInOutScreenState createState() => _BreakInOutScreenState();
+  State<BreakInOutScreen> createState() => _BreakInOutScreenState();
 }
 
 class _BreakInOutScreenState extends State<BreakInOutScreen> {

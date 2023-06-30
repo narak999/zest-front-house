@@ -7,10 +7,10 @@ class ModeSelectorPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Mode Selector',
+      title: 'Main Activities',
       home: Scaffold(
         appBar: AppBar(
-            title: Text('Mode Selector', style: getRobotoFontStyle(20, true, textColor)),
+            title: Text('Main Activities', style: getRobotoFontStyle(20, true, textColor)),
             backgroundColor: Theme.of(context).colorScheme.inversePrimary,
             leading: IconButton(
               icon: Icon(Icons.arrow_back, color: textColor),

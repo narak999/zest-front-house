@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:zest_front_house/constants/styles.dart';
 import 'package:zest_front_house/pages/adminpage.dart';
-import 'package:zest_front_house/pages/modeselectorpage.dart';
+import 'package:zest_front_house/pages/mainactivities.dart';
 import 'package:zest_front_house/pages/timeclockpage.dart';
 
 class CustomNumberPad extends StatefulWidget {
@@ -339,7 +339,7 @@ class _CustomNumberPadState extends State<CustomNumberPad> {
 
   void showCustomDialog(BuildContext context, VoidCallback onSuccess) {
     TextEditingController passcodeController = TextEditingController();
-    bool _isLoadingAdmin = false;
+    bool isLoadingAdmin = false;
 
     showDialog(
       context: context,
@@ -349,7 +349,7 @@ class _CustomNumberPadState extends State<CustomNumberPad> {
           builder: (BuildContext context, setState) {
             return AlertDialog(
               title: Text('Enter Admin Password:', style: getRobotoFontStyle(20, true, textColor)),
-              content: _isLoadingAdmin
+              content: isLoadingAdmin
                       ? const Padding(
                         padding: EdgeInsets.only(left: 100, right: 100, top: 14, bottom: 14),
                         child: CircularProgressIndicator()
@@ -360,17 +360,17 @@ class _CustomNumberPadState extends State<CustomNumberPad> {
                       ),
               actions: [
                 TextButton(
-                    onPressed: _isLoadingAdmin ? null : () {
+                    onPressed: isLoadingAdmin ? null : () {
                       Navigator.of(context).pop();
                     },
                     child: const Text('Cancel'),
                   ),
                 ElevatedButton(
-                  onPressed: _isLoadingAdmin
+                  onPressed: isLoadingAdmin
                       ? null
                       : () async {
                     setState(() {
-                      _isLoadingAdmin = true;
+                      isLoadingAdmin = true;
                     });
 
                     String enteredPasscode = passcodeController.text.trim();
@@ -386,7 +386,7 @@ class _CustomNumberPadState extends State<CustomNumberPad> {
                                 child: const AdminPage(),
                                 type: PageTransitionType.topToBottom
                             )
-                        ).then((value) {
+                        ).then((dynamic value) {
                           clearAllDisplay();
                         });
                       } else {
@@ -407,7 +407,7 @@ class _CustomNumberPadState extends State<CustomNumberPad> {
                           },
                         );
                         setState(() {
-                          _isLoadingAdmin = false;
+                          isLoadingAdmin = false;
                         });
                       }
                     }

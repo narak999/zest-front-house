@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:zest_front_house/constants/styles.dart';
+import 'package:zest_front_house/model/mongodbmodel.dart';
 
-class ModeSelectorPage extends StatelessWidget {
-  const ModeSelectorPage({super.key});
+class MainActivitiesPage extends StatelessWidget {
+
+  const MainActivitiesPage({super.key, required this.staffInfo});
+  final MongoDbModel staffInfo;
 
   @override
   Widget build(BuildContext context) {
@@ -19,10 +22,10 @@ class ModeSelectorPage extends StatelessWidget {
               },
             )
         ),
-        body: const Center(
+        body: Center(
           child: Text(
-            'Something here',
-            style: TextStyle(fontSize: 24),
+            'Hello ${staffInfo.firstName} ${staffInfo.lastName}',
+            style: getRobotoFontStyle(20, true, textColor),
           ),
         ),
       ),

@@ -1,11 +1,15 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:mongo_dart/mongo_dart.dart' as mongo;
 import 'package:page_transition/page_transition.dart';
 import 'package:zest_front_house/constants/styles.dart';
 import 'package:zest_front_house/pages/adminpage.dart';
 import 'package:zest_front_house/pages/mainactivities.dart';
 import 'package:zest_front_house/pages/timeclockpage.dart';
+
+import '../model/mongdb.dart';
+import '../model/mongodbmodel.dart';
 
 class CustomNumberPad extends StatefulWidget {
 
@@ -40,44 +44,32 @@ class _CustomNumberPadState extends State<CustomNumberPad> {
     });
   }
 
-  void verifyPINGo() {
-    setState(() => _isLoadingGo = true);
-    Future.delayed(
-      const Duration(seconds: 3),
-          () => setState(() {
-            _isLoadingGo = false;
-            Navigator.push(
-              context,
-              PageTransition(
-                  child: const ModeSelectorPage(),
-                  type: PageTransitionType.topToBottom
-              )
-            ).then((value) {
-              clearAllDisplay();
-            }
-            );
-          }),
-    );
-  }
+  Future<void> verifyPIN(String pinNumber, bool goOrTC) async{
+    setState(() => goOrTC ? _isLoadingGo = true : _isLoadingTC = true);
+    MongoDatabase db = MongoDatabase(admin: true);
+    await db.connect();
 
-  void verifyPINTC() {
-    setState(() => _isLoadingTC = true);
-    Future.delayed(
-      const Duration(seconds: 3),
-          () => setState(() {
-        _isLoadingTC = false;
-        Navigator.push(
+    List<dynamic> result = await db.getData(mongo.where.eq('passcode', pinNumber));
+    if (result.isEmpty) {
+      setState(() => goOrTC ? _isLoadingGo = false : _isLoadingTC = false);
+      clearAllDisplay();
+      throw Error();
+    }
+    MongoDbModel model = MongoDbModel.fromJson(result[0]);
+
+    setState(() {
+      goOrTC ? _isLoadingGo = false : _isLoadingTC = false;
+      Navigator.push(
           context,
           PageTransition(
-              child: TimeClockPage(employeeName: 'Sreyhuong', restaurantName: widget.title),
-              type: PageTransitionType.bottomToTop
+              child: goOrTC ? MainActivitiesPage(staffInfo: model) : TimeClockPage(staffInfo: model, restaurantName: widget.title),
+              type: PageTransitionType.topToBottom
           )
-        ).then((value) {
-          clearAllDisplay();
-        }
-        );
-      }),
-    );
+      ).then((value) {
+        clearAllDisplay();
+      }
+      );
+    });
   }
 
   void clearAllDisplay() {
@@ -249,13 +241,18 @@ class _CustomNumberPadState extends State<CustomNumberPad> {
   Widget _buildGoButton() {
     return Padding(
         padding: const EdgeInsets.only(bottom: 20),
-        child: ElevatedButton(
-            onPressed: () {
+        child:
+        ElevatedButton(
+            onPressed: () async {
               if (_pinNumber.length != 6) {
                 showWrongPINPopup(context);
               } else {
                 if (!_isLoadingGo) {
-                  verifyPINGo();
+                  try {
+                    await verifyPIN(_pinNumber, true);
+                  } catch (error) {
+                    showWrongPINPopup(context);
+                  }
                 }
               }
             },
@@ -283,12 +280,16 @@ class _CustomNumberPadState extends State<CustomNumberPad> {
     return Padding(
         padding: const EdgeInsets.only(bottom: 20),
         child: ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               if (_pinNumber.length != 6) {
                 showWrongPINPopup(context);
               } else {
                 if (!_isLoadingTC) {
-                  verifyPINTC();
+                  try {
+                    await verifyPIN(_pinNumber, false);
+                  } catch (error) {
+                    showWrongPINPopup(context);
+                  }
                 }
               }
             },

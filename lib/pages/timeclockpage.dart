@@ -3,14 +3,16 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:zest_front_house/constants/styles.dart';
 import 'package:intl/intl.dart';
-import 'package:zest_front_house/pages/mainactivities.dart';
+import 'package:zest_front_house/pages/adminpage.dart';
+
+import '../model/mongodbmodel.dart';
 
 final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
 class TimeClockPage extends StatefulWidget {
 
-  const TimeClockPage({super.key, required this.employeeName, required this.restaurantName});
-  final String employeeName;
+  const TimeClockPage({super.key, required this.staffInfo, required this.restaurantName});
+  final MongoDbModel staffInfo;
   final String restaurantName;
   
   @override
@@ -250,7 +252,7 @@ class _TimeClockPageState extends State<TimeClockPage> {
                     context,
                     MaterialPageRoute(
                         builder: (
-                            BuildContext context) => const ModeSelectorPage()
+                            BuildContext context) => const AdminPage()
                     )
                 );
               },
@@ -302,7 +304,7 @@ class _TimeClockPageState extends State<TimeClockPage> {
                             child: Image.asset('assets/images/icons/wired-flat-16-avatar-woman-nodding.gif')
                           ),
                           const SizedBox(height: 10),
-                          Text('Welcome back, ${widget.employeeName}!', style: getRobotoFontStyle(22, true, textColor)),
+                          Text('Welcome back, ${widget.staffInfo.firstName}!', style: getRobotoFontStyle(22, true, textColor)),
                           const SizedBox(height: 35),
                           ElevatedButton(
                               style: _isClockedIn

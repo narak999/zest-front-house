@@ -12,7 +12,8 @@ class MongoDbModel {
     required this.role,
     required this.admin,
     required this.passcode,
-    required this.icon
+    required this.icon,
+    required this.clockEntries
   });
 
   factory MongoDbModel.fromJson(Map<String, dynamic> json) => MongoDbModel(
@@ -21,14 +22,16 @@ class MongoDbModel {
     role: json['role'],
     admin: json['admin'],
     passcode: json['passcode'],
-    icon: json['icon']
+    icon: json['icon'],
+    clockEntries: json['clockEntries']
   );
-  String firstName;
-  String lastName;
-  String role;
-  bool admin;
-  String passcode;
-  int icon;
+  String? firstName;
+  String? lastName;
+  String? role;
+  bool? admin;
+  String? passcode;
+  int? icon;
+  List<dynamic>? clockEntries;
 
   Map<String, dynamic> toJson() => {
     'firstName': firstName,
@@ -36,6 +39,7 @@ class MongoDbModel {
     'role': role,
     'admin': admin,
     'passcode': passcode,
-    'icon': icon
+    'icon': icon,
+    'clockEntries': clockEntries
   };
 }

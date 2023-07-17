@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:zest_front_house/model/insertdata.dart';
+import 'package:wakelock/wakelock.dart';
 import 'package:zest_front_house/pages/loginpage.dart';
 
 void main() async {
@@ -38,6 +38,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState(){
     super.initState();
+    Wakelock.enable();
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.landscapeRight,
       DeviceOrientation.landscapeLeft,
@@ -46,6 +47,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   dispose(){
+    Wakelock.disable();
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.landscapeRight,
       DeviceOrientation.landscapeLeft,

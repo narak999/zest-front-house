@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:zest_front_house/constants/styles.dart';
 import 'package:intl/intl.dart';
-import 'package:zest_front_house/pages/adminpage.dart';
+import 'package:zest_front_house/pages/mainactivities.dart';
 
 import '../model/mongodbmodel.dart';
 
@@ -11,8 +13,7 @@ final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
 class TimeClockPage extends StatefulWidget {
 
-  const TimeClockPage({super.key, required this.staffInfo, required this.restaurantName});
-  final MongoDbModel staffInfo;
+  const TimeClockPage({super.key, required this.restaurantName});
   final String restaurantName;
   
   @override
@@ -245,30 +246,30 @@ class _TimeClockPageState extends State<TimeClockPage> {
                 Navigator.of(context).pop();
               },
             ),
-          actions: [
-            TextButton.icon(
-              onPressed: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (
-                            BuildContext context) => const AdminPage()
-                    )
-                );
-              },
-              icon: Row(
-                  children: [
-                    Text('Done', style: getRobotoFontStyle(20, true, textColor)),
-                    const SizedBox(width: 4),
-                    Icon(
-                        Icons.done,
-                        color: textColor,
-                        size: 40
-                    )
-                  ]
-              ), label: const Text(''),
-            ),
-            const SizedBox(width: 4)
+            actions: [
+              TextButton.icon(
+                onPressed: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (
+                              BuildContext context) => const MainActivitiesPage()
+                      )
+                  );
+                },
+                icon: Row(
+                    children: [
+                      Text('Main Activities', style: getRobotoFontStyle(20, true, textColor)),
+                      const SizedBox(width: 4),
+                      Icon(
+                          Icons.restaurant_menu,
+                          color: textColor,
+                          size: 40
+                      )
+                    ]
+                ), label: const Text(''),
+              ),
+              const SizedBox(width: 4)
           ]
         ),
         body: Center(
@@ -278,7 +279,7 @@ class _TimeClockPageState extends State<TimeClockPage> {
                 Padding(
                     padding: const EdgeInsets.only(left: 20, right:10, top: 20, bottom: 20),
                     child: Container(
-                      padding: const EdgeInsets.all(20),
+                      padding: const EdgeInsets.all(18),
                       width: 340,
                       height: 500,
                       decoration: BoxDecoration(
@@ -294,18 +295,10 @@ class _TimeClockPageState extends State<TimeClockPage> {
                           const SizedBox(height: 7),
                           Text(_formattedTime, style: getRobotoFontStyle(28, true, textColor)),
                           const SizedBox(height: 20),
-                          Container(
-                            width: 65,
-                            height: 65,
-                            decoration: const BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.white,
-                            ),
-                            child: Image.asset('assets/images/icons/wired-flat-16-avatar-woman-nodding.gif')
-                          ),
-                          const SizedBox(height: 10),
-                          Text('Welcome back, ${widget.staffInfo.firstName}!', style: getRobotoFontStyle(22, true, textColor)),
-                          const SizedBox(height: 35),
+                          futureBuilder('', 'icon', ''),
+                          const SizedBox(height: 15),
+                          futureBuilder('Welcome back ', 'firstName', '!'),
+                          const SizedBox(height: 30),
                           ElevatedButton(
                               style: _isClockedIn
                                   ? ElevatedButton.styleFrom(
@@ -430,6 +423,119 @@ class _TimeClockPageState extends State<TimeClockPage> {
       ),
     );
   }
+}
+
+Widget futureBuilder(String preText, String data, String postText) {
+  return FutureBuilder<Map<String, dynamic>?>(
+    future: readDataFromCache(),
+    builder: (BuildContext context, AsyncSnapshot<Map<String, dynamic>?> snapshot) {
+      if (snapshot.connectionState == ConnectionState.waiting) {
+        return const CircularProgressIndicator();
+      } else if (snapshot.hasError) {
+        return Text('Error: ${snapshot.error}');
+      } else {
+        Object? value;
+        switch(data) {
+          case 'firstName':
+            value = MongoDbModel.fromJson(snapshot.data).firstName;
+            break;
+          case 'lastName':
+            value = MongoDbModel.fromJson(snapshot.data).lastName;
+            break;
+          case 'role':
+            value = MongoDbModel.fromJson(snapshot.data).role;
+            break;
+          case 'icon':
+            value = MongoDbModel.fromJson(snapshot.data).icon;
+            return iconPicker(value as int?);
+          case 'clockEntries':
+            value = MongoDbModel.fromJson(snapshot.data).clockEntries;
+            break;
+        }
+        return Text('$preText$value$postText',
+          style: getRobotoFontStyle(20, true, textColor),);
+      }
+    },
+  );
+}
+
+Widget iconPicker(int? choice) {
+  Image selectedIcon = Image.asset('assets/images/icons/wired-flat-16-avatar-woman-nodding.gif');
+  switch (choice) {
+    case 0:
+      selectedIcon = Image.asset('assets/images/icons/wired-flat-16-avatar-woman-nodding.gif');
+      break;
+    case 1:
+      selectedIcon = Image.asset('assets/images/icons/wired-flat-17-avatar-man-nodding.gif');
+      break;
+    case 2:
+      selectedIcon = Image.asset('assets/images/icons/wired-flat-269-avatar-female.gif');
+      break;
+    case 3:
+      selectedIcon = Image.asset('assets/images/icons/wired-flat-268-avatar-man.gif');
+      break;
+    case 4:
+      selectedIcon = Image.asset('assets/images/icons/icons8-beth-smith-100.png');
+      break;
+    case 5:
+      selectedIcon = Image.asset('assets/images/icons/icons8-jerry-smith-100.png');
+      break;
+    case 6:
+      selectedIcon = Image.asset('assets/images/icons/icons8-summer-smith-100.png');
+      break;
+    case 7:
+      selectedIcon = Image.asset('assets/images/icons/icons8-rick-sanchez-100.png');
+      break;
+    case 8:
+      selectedIcon = Image.asset('assets/images/icons/icons8-morty-smith-100.png');
+      break;
+    case 9:
+      selectedIcon = Image.asset('assets/images/icons/icons8-homer-simpson-96.png');
+      break;
+    case 10:
+      selectedIcon = Image.asset('assets/images/icons/icons8-super-mario-100.png');
+      break;
+    case 11:
+      selectedIcon = Image.asset('assets/images/icons/icons8-kawaii-cupcake-100.png');
+      break;
+    case 12:
+      selectedIcon = Image.asset('assets/images/icons/icons8-kawaii-french-fries-100.png');
+      break;
+    case 13:
+      selectedIcon = Image.asset('assets/images/icons/icons8-kawaii-ice-cream-100.png');
+      break;
+    case 14:
+      selectedIcon = Image.asset('assets/images/icons/icons8-cow-100.png');
+      break;
+    case 15:
+      selectedIcon = Image.asset('assets/images/icons/icons8-bear-100.png');
+      break;
+    case 16:
+      selectedIcon = Image.asset('assets/images/icons/icons8-panda-100.png');
+      break;
+    case 17:
+      selectedIcon = Image.asset('assets/images/icons/icons8-whale-100.png');
+      break;
+    case 18:
+      selectedIcon = Image.asset('assets/images/icons/icons8-penguin-100.png');
+      break;
+  }
+  return Container(
+      width: 65,
+      height: 65,
+      decoration: const BoxDecoration(
+        shape: BoxShape.circle,
+        color: Colors.white,
+      ),
+      child: choice == null ? Image.asset('assets/images/icons/loading.gif') : selectedIcon
+  );
+}
+
+Future<Map<String, dynamic>?> readDataFromCache() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String? value = prefs.getString('staffInfo');
+  Map<String, dynamic>? result = value != null ? jsonDecode(value): null;
+  return result;
 }
 
 Duration _calculateHoursWorked(DateTime clockedIn, DateTime clockedOut) {

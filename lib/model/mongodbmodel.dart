@@ -16,14 +16,14 @@ class MongoDbModel {
     required this.clockEntries
   });
 
-  factory MongoDbModel.fromJson(Map<String, dynamic> json) => MongoDbModel(
-    firstName: json['firstName'],
-    lastName: json['lastName'],
-    role: json['role'],
-    admin: json['admin'],
-    passcode: json['passcode'],
-    icon: json['icon'],
-    clockEntries: json['clockEntries']
+  factory MongoDbModel.fromJson(Map<String, dynamic>? json) => MongoDbModel(
+    firstName: json?['firstName'],
+    lastName: json?['lastName'],
+    role: json?['role'],
+    admin: json?['admin'],
+    passcode: json?['passcode'],
+    icon: json?['icon'],
+    clockEntries: json?['clockEntries']
   );
   String? firstName;
   String? lastName;

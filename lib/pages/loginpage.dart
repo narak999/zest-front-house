@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:mongo_dart/mongo_dart.dart' as mongo;
 import 'package:page_transition/page_transition.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:zest_front_house/constants/styles.dart';
 import 'package:zest_front_house/pages/adminpage.dart';
 import 'package:zest_front_house/pages/mainactivities.dart';
@@ -55,14 +57,17 @@ class _CustomNumberPadState extends State<CustomNumberPad> {
       clearAllDisplay();
       throw Error();
     }
-    MongoDbModel model = MongoDbModel.fromJson(result[0]);
+
+    String value = jsonEncode(result[0]);
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('staffInfo', value);
 
     setState(() {
       goOrTC ? _isLoadingGo = false : _isLoadingTC = false;
       Navigator.push(
           context,
           PageTransition(
-              child: goOrTC ? MainActivitiesPage(staffInfo: model) : TimeClockPage(staffInfo: model, restaurantName: widget.title),
+              child: goOrTC ? const MainActivitiesPage() : TimeClockPage(restaurantName: widget.title),
               type: PageTransitionType.topToBottom
           )
       ).then((value) {
@@ -356,9 +361,10 @@ class _CustomNumberPadState extends State<CustomNumberPad> {
                         child: CircularProgressIndicator()
                       )
                       : TextField(
-                        controller: passcodeController,
-                        obscureText: true,
-                      ),
+                          keyboardType: TextInputType.number,
+                          controller: passcodeController,
+                          obscureText: true,
+                        ),
               actions: [
                 TextButton(
                     onPressed: isLoadingAdmin ? null : () {
@@ -370,46 +376,44 @@ class _CustomNumberPadState extends State<CustomNumberPad> {
                   onPressed: isLoadingAdmin
                       ? null
                       : () async {
-                    setState(() {
-                      isLoadingAdmin = true;
-                    });
+                    setState(() => isLoadingAdmin = true);
 
                     String enteredPasscode = passcodeController.text.trim();
-                    await Future.delayed(const Duration(seconds: 3));
+                    List<dynamic> result = [];
+                    try {
+                      MongoDatabase db = MongoDatabase(admin: true);
+                      await db.connect();
+
+                      result = await db.getData(mongo.where.eq(
+                          'passcode', enteredPasscode));
+                    } catch (error) {
+                      wrongPasscodeAlertDialog();
+                    }
+
+                    if (result.isEmpty) {
+                      setState(() => isLoadingAdmin = false);
+                      wrongPasscodeAlertDialog();
+                    }
+                    MongoDbModel model = MongoDbModel.fromJson(result[0]);
+                    String value = jsonEncode(result[0]);
+                    SharedPreferences prefs = await SharedPreferences.getInstance();
+                    await prefs.setString('staffInfo', value);
                     onSuccess.call();
 
                     if (context.mounted) {
-                      if (enteredPasscode == '12345') {
-                        Navigator.of(context).pop();
+                      if (enteredPasscode == model.passcode && model.admin == true) {
                         Navigator.push(
                           context,
                             PageTransition(
                                 child: const AdminPage(),
                                 type: PageTransitionType.topToBottom
                             )
-                        ).then((dynamic value) {
-                          clearAllDisplay();
-                        });
-                      } else {
-                        showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return AlertDialog(
-                              title: Text('Wrong Passcode', style: getRobotoFontStyle(20, true, textColor)),
-                              actions: [
-                                ElevatedButton(
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                  child: const Text('Try Again'),
-                                ),
-                              ],
-                            );
-                          },
                         );
-                        setState(() {
-                          isLoadingAdmin = false;
-                        });
+                      } else {
+                          wrongPasscodeAlertDialog();
+                          setState(() {
+                            isLoadingAdmin = false;
+                          });
                       }
                     }
                   },
@@ -418,6 +422,25 @@ class _CustomNumberPadState extends State<CustomNumberPad> {
               ],
             );
           },
+        );
+      },
+    );
+  }
+
+  void wrongPasscodeAlertDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Wrong Passcode', style: getRobotoFontStyle(20, true, textColor)),
+          actions: [
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Try Again'),
+            ),
+          ],
         );
       },
     );

@@ -1,8 +1,7 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:zest_front_house/constants/styles.dart';
+import 'package:zest_front_house/pages/adminpages/staffpage.dart';
+import 'package:zest_front_house/pages/adminpages/registerpage.dart';
 
 import 'mainactivities.dart';
 
@@ -12,6 +11,7 @@ class AdminPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Admin Page',
       home: Scaffold(
         appBar: AppBar(
@@ -64,28 +64,28 @@ class AdminPage extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      buildAdminButtons('Users', const Color(0xfffffee0), Image.asset('assets/images/icons/icons8-waitress-skin-type-3-96.png')),
-                      buildAdminButtons('Register', const Color(0xffdefefd), Image.asset('assets/images/icons/icons8-imac-96.png')),
-                      buildAdminButtons('Inventory', const Color(0xfffeeeff), Image.asset('assets/images/icons/icons8-box-96.png')),
-                      buildAdminButtons('Supplier', const Color(0xffd2fed9), Image.asset('assets/images/icons/icons8-truck-96.png'))
+                      buildAdminButtons('Staff', const Color(0xfffffee0), Image.asset('assets/images/icons/icons8-waitress-skin-type-3-96.png'), context),
+                      buildAdminButtons('Register', const Color(0xffdefefd), Image.asset('assets/images/icons/icons8-imac-96.png'), context),
+                      buildAdminButtons('Inventory', const Color(0xfffeeeff), Image.asset('assets/images/icons/icons8-box-96.png'), context),
+                      buildAdminButtons('Supplier', const Color(0xffd2fed9), Image.asset('assets/images/icons/icons8-truck-96.png'), context)
                     ],
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      buildAdminButtons('Menu', const Color(0xffdefefd), Image.asset('assets/images/icons/icons8-menu-96.png')),
-                      buildAdminButtons('Reports', const Color(0xfffeeeff), Image.asset('assets/images/icons/icons8-analytics-96.png')),
-                      buildAdminButtons('Training', const Color(0xffd2fed9), Image.asset('assets/images/icons/icons8-training-96.png')),
-                      buildAdminButtons('Gift Card', const Color(0xfffffee0), Image.asset('assets/images/icons/icons8-gift-card-96.png'))
+                      buildAdminButtons('Menu', const Color(0xffdefefd), Image.asset('assets/images/icons/icons8-menu-96.png'), context),
+                      buildAdminButtons('Reports', const Color(0xfffeeeff), Image.asset('assets/images/icons/icons8-analytics-96.png'), context),
+                      buildAdminButtons('Training', const Color(0xffd2fed9), Image.asset('assets/images/icons/icons8-training-96.png'), context),
+                      buildAdminButtons('Gift Card', const Color(0xfffffee0), Image.asset('assets/images/icons/icons8-gift-card-96.png'), context)
                     ],
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      buildAdminButtons('Schedule', const Color(0xfffeeeff), Image.asset('assets/images/icons/icons8-calendar-96.png')),
-                      buildAdminButtons('Tables', const Color(0xffd2fed9), Image.asset('assets/images/icons/icons8-table-96.png')),
-                      buildAdminButtons('Bar', const Color(0xfffffee0), Image.asset('assets/images/icons/icons8-bar-96.png')),
-                      buildAdminButtons('Delivery', const Color(0xffdefefd), Image.asset('assets/images/icons/icons8-motorcycle-delivery-multiple-boxes-96.png'))
+                      buildAdminButtons('Schedule', const Color(0xfffeeeff), Image.asset('assets/images/icons/icons8-calendar-96.png'), context),
+                      buildAdminButtons('Tables', const Color(0xffd2fed9), Image.asset('assets/images/icons/icons8-table-96.png'), context),
+                      buildAdminButtons('Bar', const Color(0xfffffee0), Image.asset('assets/images/icons/icons8-bar-96.png'), context),
+                      buildAdminButtons('Delivery', const Color(0xffdefefd), Image.asset('assets/images/icons/icons8-motorcycle-delivery-multiple-boxes-96.png'), context)
                     ],
                   ),
                 ],
@@ -97,42 +97,49 @@ class AdminPage extends StatelessWidget {
     );
   }
 
-  Widget buildAdminButtons(String text, Color bgColor, Image selectedImage) {
+  Widget buildAdminButtons(String name, Color bgColor, Image selectedImage, BuildContext context) {
     return Container(
-      width: 120,
-      height: 100,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: ElevatedButton(
-        onPressed: () => doSth(),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: bgColor,
+        width: 150,
+        height: 100,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
         ),
-        child: Column(
-          children: [
-            const SizedBox(height: 10),
-            SizedBox(
-              height: 50,
-              width: 50,
-              child: selectedImage,
+        child: ElevatedButton(
+            onPressed: () => navigateToPages(name, context),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: bgColor,
             ),
-            const SizedBox(height: 8),
-            Text(text, style: getRobotoFontStyle(18, true, textColor))
-          ],
+            child: Column(
+              children: [
+                const SizedBox(height: 10),
+                SizedBox(
+                  height: 50,
+                  width: 50,
+                  child: selectedImage,
+                ),
+                const SizedBox(height: 8),
+                Text(name, style: getRobotoFontStyle(18, true, textColor))
+              ],
+            )
         )
-      )
     );
   }
 
-  void doSth() {
-
-  }
-
-  Future<Map<String, dynamic>?> readDataFromCache() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? value = prefs.getString('staffInfo');
-    Map<String, dynamic>? result = value != null ? jsonDecode(value): null;
-    return result;
+  void navigateToPages(String name, BuildContext context) {
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (BuildContext context) {
+              switch(name) {
+                case 'Staff':
+                  return const StaffPage();
+                case 'Register':
+                  return const RegisterPage();
+                default:
+                  return const RegisterPage();
+              }
+            }
+        )
+    );
   }
 }

@@ -35,10 +35,10 @@ class _TimeClockPageState extends State<TimeClockPage> {
   DateTime _startBreak = DateTime.now();
   DateTime _endBreak = DateTime.now();
   final List<Widget> timeClockColumn = <Widget>[];
-  Duration _dayTotal = Duration(hours: 0);
-  Duration _weekTotal = Duration(hours: 0);
-  Duration _breakToday = Duration(hours: 0);
-  Duration _breakThisWeek = Duration(hours: 0);
+  Duration _dayTotal = const Duration(hours: 0);
+  final Duration _weekTotal = const Duration(hours: 0);
+  Duration _breakToday = const Duration(hours: 0);
+  final Duration _breakThisWeek = const Duration(hours: 0);
 
   @override
   void initState() {
@@ -294,11 +294,11 @@ class _TimeClockPageState extends State<TimeClockPage> {
                           Text(_formattedDate, style: getRobotoFontStyle(22, false, textColor)),
                           const SizedBox(height: 7),
                           Text(_formattedTime, style: getRobotoFontStyle(28, true, textColor)),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 15),
                           futureBuilder('', 'icon', ''),
                           const SizedBox(height: 15),
-                          futureBuilder('Welcome back ', 'firstName', '!'),
-                          const SizedBox(height: 30),
+                          futureBuilder('Welcome back, ', 'firstName', '!'),
+                          const SizedBox(height: 13),
                           ElevatedButton(
                               style: _isClockedIn
                                   ? ElevatedButton.styleFrom(
@@ -354,19 +354,20 @@ class _TimeClockPageState extends State<TimeClockPage> {
                       )
                     )
                 ),
-                Padding(
-                    padding: const EdgeInsets.only(left: 10, right: 20, top: 20, bottom: 20),
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.vertical,
+                Expanded(
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.vertical,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 10, right: 20, top: 20, bottom: 20),
                         child: Container(
-                        padding: const EdgeInsets.all(20),
-                        alignment: Alignment.centerLeft,
-                        width: MediaQuery.of(context).size.width - 400,
-                        decoration: BoxDecoration(
-                          color: Colors.black12,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Column(
+                          padding: const EdgeInsets.all(20),
+                          alignment: Alignment.centerLeft,
+                          width: MediaQuery.of(context).size.width - 400,
+                          decoration: BoxDecoration(
+                            color: Colors.black12,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Column(
                           children: [
                             Column(
                               children: [
@@ -413,6 +414,7 @@ class _TimeClockPageState extends State<TimeClockPage> {
                             )
                           ]
                         )
+                      )
                     )
                   )
                 )
@@ -449,7 +451,7 @@ Widget futureBuilder(String preText, String data, String postText) {
             value = MongoDbModel.fromJson(snapshot.data).icon;
             return iconPicker(value as int?);
           case 'clockEntries':
-            value = MongoDbModel.fromJson(snapshot.data).clockEntries;
+            value = MongoDbModel.fromJson(snapshot.data).dailyClockEntries;
             break;
         }
         return Text('$preText$value$postText',

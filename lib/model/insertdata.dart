@@ -33,11 +33,14 @@ class _MongoDbInsertState extends State<MongoDbInsert> {
             const SizedBox(height: 50),
             ElevatedButton(
                 onPressed: () {
-                  _insertData('Taylor', 'Swift', 'Manager', true, '131398', 4, [{
+                  _insertData('Taylor', 'Swift', 'Manager', true, '131398', 4, '1234567890', [{
                     'date': '2023-07-11',
                     'clockIn': '08:30 AM',
                     'clockOut': '04:30 PM',
                     'hoursWorked': 8
+                  }], [{
+                    'date': '2023-12-10',
+                    'hoursWorked': 15
                   }]);
                 },
                 child: Text(
@@ -75,7 +78,8 @@ class _MongoDbInsertState extends State<MongoDbInsert> {
   }
 
   Future<void> _insertData(String fName, String lName, String _role,
-      bool _admin, String _passcode, int _icon, List<dynamic> _clockEntries) async {
+      bool _admin, String _passcode, int _icon, String _phoneNumber,
+      List<dynamic> _dailyClockEntries, List<dynamic> _weeklyClockEntries) async {
     final MongoDbModel userData = MongoDbModel(
         firstName: fName,
         lastName: lName,
@@ -83,7 +87,9 @@ class _MongoDbInsertState extends State<MongoDbInsert> {
         admin: _admin,
         passcode: _passcode,
         icon: _icon,
-        clockEntries: _clockEntries
+        phoneNumber: _phoneNumber,
+        dailyClockEntries: _dailyClockEntries,
+        weeklyClockEntries: _weeklyClockEntries
     );
     String result = await db.insert(userData);
     print(result);
@@ -91,7 +97,7 @@ class _MongoDbInsertState extends State<MongoDbInsert> {
 
   Future<void> _queryData() async {
     List<dynamic> result = await db.getData(mongo.where.eq('passcode', '131398'));
-    if (result.length == 0) {
+    if (result.isEmpty) {
       print("No result!");
     } else {
       print(result);

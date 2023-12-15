@@ -46,7 +46,7 @@ class _CustomNumberPadState extends State<CustomNumberPad> {
     });
   }
 
-  Future<void> verifyPIN(String pinNumber, bool goOrTC) async{
+  Future<void> verifyPIN(String pinNumber, bool goOrTC) async {
     setState(() => goOrTC ? _isLoadingGo = true : _isLoadingTC = true);
     MongoDatabase db = MongoDatabase(admin: true);
     await db.connect();
@@ -54,7 +54,7 @@ class _CustomNumberPadState extends State<CustomNumberPad> {
     List<dynamic> result = await db.getData(mongo.where.eq('passcode', pinNumber));
     if (result.isEmpty) {
       setState(() => goOrTC ? _isLoadingGo = false : _isLoadingTC = false);
-      clearAllDisplay();
+      //clearAllDisplay();
       throw Error();
     }
 
@@ -86,125 +86,128 @@ class _CustomNumberPadState extends State<CustomNumberPad> {
 
   @override
   Widget build(BuildContext context) {
-    return AbsorbPointer(
-      absorbing: _isLoadingGo || _isLoadingTC,
-      child: Scaffold(
-          resizeToAvoidBottomInset: false,
-          appBar: AppBar(
-            backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-            title: Text(widget.title, style: getRobotoFontStyle(20, true, textColor)),
-            actions: [
-              TextButton.icon(
-                  onPressed: () => showCustomDialog(context, () {
-                    if (!mounted) return;
-                    Navigator.of(context).pop();
-                  }),
-                  icon: Row(
-                      children: [
-                        Text('Admin', style: getRobotoFontStyle(20, true, textColor)),
-                        const SizedBox(width: 4),
-                        Icon(
-                        Icons.admin_panel_settings_sharp,
-                        color: textColor,
-                        size: 40
-                        )
-                      ]
-                  ), label: const Text(''),
-              ),
-              const SizedBox(width: 4)
-            ],
-          ),
-        body: Center (
-          child: SafeArea(
-            child: Container(
-              width: 555,
-              height: 400,
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.inversePrimary,
-                borderRadius: BorderRadius.circular(10),
-                ),
-                child: Row(
-                  children: [
-                  const SizedBox(width: 20),
-                  Container(
-                    width: 340,
-                    height: 370,
-                    alignment: Alignment.center,
-                    child: Padding(
-                      padding: const EdgeInsets.all(15.0),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: AbsorbPointer(
+        absorbing: _isLoadingGo || _isLoadingTC,
+        child: Scaffold(
+            resizeToAvoidBottomInset: false,
+            appBar: AppBar(
+              backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+              title: Text(widget.title, style: getRobotoFontStyle(20, true, textColor)),
+              actions: [
+                TextButton.icon(
+                    onPressed: () => showCustomDialog(context, () {
+                      if (!mounted) return;
+                      Navigator.of(context).pop();
+                    }),
+                    icon: Row(
                         children: [
-                          Text(
-                            'Enter your PIN number:',
-                            style: getRobotoFontStyle(20, true, textColor),
-                          ),
-                          const SizedBox(height: 20),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children:  List.generate(6,
-                                  (int index) => Container(
-                                margin: const EdgeInsets.symmetric(horizontal: 8),
-                                width: 20,
-                                height: 20,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: index < _dotCount ? Colors.black87 : Colors.transparent,
-                                  border: Border.all(color: Colors.black87),
+                          Text('Admin', style: getRobotoFontStyle(20, true, textColor)),
+                          const SizedBox(width: 4),
+                          Icon(
+                          Icons.admin_panel_settings_sharp,
+                          color: textColor,
+                          size: 40
+                          )
+                        ]
+                    ), label: const Text(''),
+                ),
+                const SizedBox(width: 4)
+              ],
+            ),
+          body: Center (
+            child: SafeArea(
+              child: Container(
+                width: 555,
+                height: 400,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.inversePrimary,
+                  borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Row(
+                    children: [
+                    const SizedBox(width: 20),
+                    Container(
+                      width: 340,
+                      height: 370,
+                      alignment: Alignment.center,
+                      child: Padding(
+                        padding: const EdgeInsets.all(15.0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'Enter your PIN number:',
+                              style: getRobotoFontStyle(20, true, textColor),
+                            ),
+                            const SizedBox(height: 20),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children:  List.generate(6,
+                                    (int index) => Container(
+                                  margin: const EdgeInsets.symmetric(horizontal: 8),
+                                  width: 20,
+                                  height: 20,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: index < _dotCount ? Colors.black87 : Colors.transparent,
+                                    border: Border.all(color: Colors.black87),
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 15),
-                          const Divider(thickness: 3, height: 12, color: Color(0xff076c87)),
-                          const SizedBox(height: 10),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              _buildNumberButton('1'),
-                              _buildNumberButton('2'),
-                              _buildNumberButton('3')
-                            ],
-                          ),
-                          const SizedBox(height: 14),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              _buildNumberButton('4'),
-                              _buildNumberButton('5'),
-                              _buildNumberButton('6')
-                            ],
-                          ),
-                          const SizedBox(height: 14),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              _buildNumberButton('7'),
-                              _buildNumberButton('8'),
-                              _buildNumberButton('9'),
-                            ],
-                          ),
-                          const SizedBox(height: 14),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              _buildClearAllButton(),
-                              _buildNumberButton('0'),
-                              _buildClearButton()
-                            ],
-                          )
-                        ],
+                            const SizedBox(height: 15),
+                            const Divider(thickness: 3, height: 12, color: Color(0xff076c87)),
+                            const SizedBox(height: 10),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                _buildNumberButton('1'),
+                                _buildNumberButton('2'),
+                                _buildNumberButton('3')
+                              ],
+                            ),
+                            const SizedBox(height: 14),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                _buildNumberButton('4'),
+                                _buildNumberButton('5'),
+                                _buildNumberButton('6')
+                              ],
+                            ),
+                            const SizedBox(height: 14),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                _buildNumberButton('7'),
+                                _buildNumberButton('8'),
+                                _buildNumberButton('9'),
+                              ],
+                            ),
+                            const SizedBox(height: 14),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                _buildClearAllButton(),
+                                _buildNumberButton('0'),
+                                _buildClearButton()
+                              ],
+                            )
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  Column(
-                    children: [
-                      const SizedBox(height: 230),
-                      _buildGoButton(),
-                      _buildTimeClockButton()
-                      ]
-                  )
-                ]
+                    Column(
+                      children: [
+                        const SizedBox(height: 215),
+                        _buildGoButton(),
+                        _buildTimeClockButton()
+                        ]
+                    )
+                  ]
+                )
               )
             )
           )
@@ -215,31 +218,40 @@ class _CustomNumberPadState extends State<CustomNumberPad> {
 
   Widget _buildNumberButton(String number) {
     return ElevatedButton(
+      style: ButtonStyle(
+        backgroundColor: MaterialStateProperty.all<Color>(Colors.white),
+      ),
       onPressed: () {
         updateDisplay(number);
       },
       child: Text(
         number,
-        style: const TextStyle(fontSize: 24),
+        style: TextStyle(color: textColor ,fontSize: 24),
       ),
     );
   }
 
   Widget _buildClearButton() {
     return ElevatedButton(
+      style: ButtonStyle(
+        backgroundColor: MaterialStateProperty.all<Color>(Colors.white),
+      ),
       onPressed: () {
         clearDisplay();
       },
-      child: const Icon(Icons.backspace),
+      child: Icon(color: textColor, Icons.backspace),
     );
   }
 
   Widget _buildClearAllButton() {
     return ElevatedButton(
+      style: ButtonStyle(
+        backgroundColor: MaterialStateProperty.all<Color>(Colors.white),
+      ),
       onPressed: () {
         clearAllDisplay();
       },
-      child: const Icon(Icons.close_rounded, size: 26)
+      child: Icon(color: textColor, Icons.close_rounded, size: 26)
     );
   }
 
@@ -248,6 +260,9 @@ class _CustomNumberPadState extends State<CustomNumberPad> {
         padding: const EdgeInsets.only(bottom: 20),
         child:
         ElevatedButton(
+            style: ButtonStyle(
+              backgroundColor: MaterialStateProperty.all<Color>(const Color(0xff8bc24a)),
+            ),
             onPressed: () async {
               if (_pinNumber.length != 6) {
                 showWrongPINPopup(context);
@@ -257,24 +272,33 @@ class _CustomNumberPadState extends State<CustomNumberPad> {
                     await verifyPIN(_pinNumber, true);
                   } catch (error) {
                     showWrongPINPopup(context);
+                    setState(() => _isLoadingGo = false);
                   }
                 }
               }
             },
-            child: _isLoadingGo ? Column(
+            child: _isLoadingGo ? const Column(
                 children: [
-                  const SizedBox(height: 5),
-                  CircularProgressIndicator(
-                      color: textColor,
-                      strokeWidth: 2.5
+                  SizedBox(height: 5),
+                  SizedBox(
+                      height: 28,
+                      width: 28,
+                      child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 3
+                      )
                   ),
-                  Text('       Go       ', style: TextStyle(color: textColor, fontSize: 20))
+                  SizedBox(height: 3),
+                  Text('       Go       ', style: TextStyle(color: Colors.white, fontSize: 20)),
+                  SizedBox(height: 5)
                 ])
-                : Column(
+                : const Column(
                 children: [
-                  const SizedBox(height: 5),
-                  Icon(Icons.subdirectory_arrow_right_outlined, color: textColor),
-                  Text('       Go       ', style: TextStyle(color: textColor, fontSize: 20))
+                  SizedBox(height: 5),
+                  Icon(size: 28, Icons.subdirectory_arrow_right_outlined, color: Colors.white),
+                  SizedBox(height: 3),
+                  Text('       Go       ', style: TextStyle(color: Colors.white, fontSize: 20)),
+                  SizedBox(height: 5)
                 ]
             )
         )
@@ -285,6 +309,9 @@ class _CustomNumberPadState extends State<CustomNumberPad> {
     return Padding(
         padding: const EdgeInsets.only(bottom: 20),
         child: ElevatedButton(
+            style: ButtonStyle(
+              backgroundColor: MaterialStateProperty.all<Color>(const Color(0xffff9700)),
+            ),
             onPressed: () async {
               if (_pinNumber.length != 6) {
                 showWrongPINPopup(context);
@@ -294,24 +321,33 @@ class _CustomNumberPadState extends State<CustomNumberPad> {
                     await verifyPIN(_pinNumber, false);
                   } catch (error) {
                     showWrongPINPopup(context);
+                    setState(() => _isLoadingTC = false);
                   }
                 }
               }
             },
-            child: _isLoadingTC ? Column(
+            child: _isLoadingTC ? const Column(
                 children: [
-                  const SizedBox(height: 5),
-                  CircularProgressIndicator(
-                    color: textColor,
-                    strokeWidth: 2.5
+                  SizedBox(height: 5),
+                  SizedBox(
+                    height: 28,
+                    width: 28,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 3
+                    )
                   ),
-                  Text('Time Clock', style: TextStyle(color: textColor, fontSize: 20))
+                  SizedBox(height: 3),
+                  Text('Time Clock', style: TextStyle(color: Colors.white, fontSize: 18)),
+                  SizedBox(height: 5)
                 ])
-                : Column(
+                : const Column(
                 children: [
-                  const SizedBox(height: 5),
-                  Icon(Icons.hourglass_bottom_outlined, color: textColor),
-                  Text('Time Clock', style: TextStyle(color: textColor, fontSize: 20))
+                  SizedBox(height: 5),
+                  Icon(size: 28, Icons.hourglass_bottom_outlined, color: Colors.white),
+                  SizedBox(height: 3),
+                  Text('Time Clock', style: TextStyle(color: Colors.white, fontSize: 18)),
+                  SizedBox(height: 5)
                 ]
             )
         )
@@ -328,7 +364,8 @@ class _CustomNumberPadState extends State<CustomNumberPad> {
               children: [
                 const Icon(Icons.warning, size: 25, color: Colors.red),
                 const SizedBox(width: 5),
-                Text('Wrong PIN Number', style: getRobotoFontStyle(20, true, textColor))
+                _pinNumber.length != 6 ? Text('Enter PIN Number', style: getRobotoFontStyle(20, true, textColor))
+                : Text('Wrong PIN Number', style: getRobotoFontStyle(20, true, textColor))
               ]
           ),
           content: Text('Please try again!', style: TextStyle(color: textColor, fontSize: 18)),
@@ -361,7 +398,7 @@ class _CustomNumberPadState extends State<CustomNumberPad> {
                         child: CircularProgressIndicator()
                       )
                       : TextField(
-                          keyboardType: TextInputType.number,
+                          keyboardType: TextInputType.text,
                           controller: passcodeController,
                           obscureText: true,
                         ),
@@ -379,42 +416,46 @@ class _CustomNumberPadState extends State<CustomNumberPad> {
                     setState(() => isLoadingAdmin = true);
 
                     String enteredPasscode = passcodeController.text.trim();
-                    List<dynamic> result = [];
+                    List<dynamic> result = <dynamic>[];
                     try {
                       MongoDatabase db = MongoDatabase(admin: true);
                       await db.connect();
 
                       result = await db.getData(mongo.where.eq(
                           'passcode', enteredPasscode));
-                    } catch (error) {
-                      wrongPasscodeAlertDialog();
-                    }
+                      await db.disconnect();
 
-                    if (result.isEmpty) {
-                      setState(() => isLoadingAdmin = false);
-                      wrongPasscodeAlertDialog();
-                    }
-                    MongoDbModel model = MongoDbModel.fromJson(result[0]);
-                    String value = jsonEncode(result[0]);
-                    SharedPreferences prefs = await SharedPreferences.getInstance();
-                    await prefs.setString('staffInfo', value);
-                    onSuccess.call();
+                      if (result.isEmpty) {
+                        setState(() => isLoadingAdmin = false);
+                        wrongPasscodeAlertDialog();
+                      }
+                      MongoDbModel model = MongoDbModel.fromJson(result[0]);
+                      String value = jsonEncode(result[0]);
+                      SharedPreferences prefs = await SharedPreferences.getInstance();
+                      await prefs.setString('staffInfo', value);
+                      onSuccess.call();
 
-                    if (context.mounted) {
-                      if (enteredPasscode == model.passcode && model.admin == true) {
-                        Navigator.push(
-                          context,
-                            PageTransition(
-                                child: const AdminPage(),
-                                type: PageTransitionType.topToBottom
-                            )
-                        );
-                      } else {
+                      if (context.mounted) {
+                        if (enteredPasscode == model.passcode && model.admin == true) {
+                          Navigator.push(
+                              context,
+                              PageTransition(
+                                  child: const AdminPage(),
+                                  type: PageTransitionType.topToBottom
+                              )
+                          );
+                        } else {
                           wrongPasscodeAlertDialog();
                           setState(() {
                             isLoadingAdmin = false;
                           });
+                        }
                       }
+                    } catch (error) {
+                      wrongPasscodeAlertDialog();
+                      setState(() {
+                        isLoadingAdmin = false;
+                      });
                     }
                   },
                   child: const Text('Submit'),

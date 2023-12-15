@@ -39,4 +39,9 @@ class MongoDatabase {
     final dynamic arrData = await userCollection.find(query).toList();
     return arrData;
   }
+
+  Future<List<Map<String, dynamic>>> getAllData() async {
+    final dynamic arrData = await userCollection.find().toList();
+    return arrData;
+  }
 }
